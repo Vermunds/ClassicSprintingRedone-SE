@@ -6,9 +6,7 @@
 #include <xbyak/xbyak.h>
 
 //SkyrimSE.exe + 0x704B3
-RelocAddr <uintptr_t *> SprintKeyUpFunction = 0x704B3F;
-//SkyrimSE.exe + 0x704B4D
-RelocAddr <uintptr_t *> SprintKeyDownFunction = 0x704B4D;
+RelocAddr <uintptr_t *> SprintKeyStatusFunction = 0x704B30;
 //SkyrimSE.exe + 0x2F4DEF8
 RelocAddr <uintptr_t *> SprintStatusAddress = 0x2F4DEF8;
 //SkyrimSE.exe + 0x705058
@@ -64,57 +62,36 @@ extern "C" {
 		//This is a different function than the original, as it's only called when a key is pressed.
 		//Parent function: SkyrimSE.exe + 0x70E000
 		//Original function: SkyrimSE.exe + 0x709770
-
-		//Key up
 		{
-			struct SprintKeyUp_Code : Xbyak::CodeGenerator
+			struct SprintKeyStatus_Code : Xbyak::CodeGenerator
 			{
-				SprintKeyUp_Code(void * buf) : Xbyak::CodeGenerator(4096, buf)
+				SprintKeyStatus_Code(void * buf) : Xbyak::CodeGenerator(4096, buf)
 				{
+					Xbyak::Label keyDown;
+					Xbyak::Label newCode;
+					Xbyak::Label sprintStatus;
 					Xbyak::Label rtrn;
-
+					//Original code
+					xorps(xmm0, xmm0);
+					ucomiss(xmm0, ptr[rdx + 0x28]);
+					jne(keyDown);
+					comiss(xmm0, ptr[rdx + 0x2C]);
+					ja(keyDown);
 					//Key up
 					mov(eax, 0x1);
 					test(al, al);
 					sete(al);
+					mov(ptr[rcx + 0x10], al);
+					jmp(newCode);
 
-					//New code
-					cmp(r8, 0x2); //Check R8 to make sure it's the sprinting button
-					jne(rtrn);
-					push(rbx);
-					mov(rbx, SprintStatusAddress.GetUIntPtr());
-					mov(rbx, ptr[rbx]);
-					mov(ptr[rbx + 0xBDD], al);
-					pop(rbx);
-					ret();
-
-					L(rtrn);
-					ret();
-				}
-			};
-
-			void * codeBuf = g_localTrampoline.StartAlloc();
-			SprintKeyUp_Code code(codeBuf);
-			g_localTrampoline.EndAlloc(code.getCurr());
-
-			g_branchTrampoline.Write6Branch(SprintKeyUpFunction.GetUIntPtr(), uintptr_t(code.getCode()));
-		}
-
-		//Key Down
-
-		{
-			struct SprintKeyDown_Code : Xbyak::CodeGenerator
-			{
-				SprintKeyDown_Code(void * buf) : Xbyak::CodeGenerator(4096, buf)
-				{
-					Xbyak::Label rtrn;
-
+					L(keyDown);
 					//Key down
 					xor (eax, eax);
 					test(al, al);
 					sete(al);
 					mov(ptr[rcx + 0x10], al);
-
+					jmp(newCode);
+					L(newCode);
 					//New code
 					cmp(r8, 0x2); //Check R8 to make sure it's the sprinting button
 					jne(rtrn);
@@ -124,17 +101,14 @@ extern "C" {
 					mov(ptr[rbx + 0xBDD], al);
 					pop(rbx);
 					ret();
-
 					L(rtrn);
 					ret();
 				}
 			};
-
 			void * codeBuf = g_localTrampoline.StartAlloc();
-			SprintKeyDown_Code code(codeBuf);
+			SprintKeyStatus_Code code(codeBuf);
 			g_localTrampoline.EndAlloc(code.getCurr());
-
-			g_branchTrampoline.Write6Branch(SprintKeyDownFunction.GetUIntPtr(), uintptr_t(code.getCode()));
+			g_branchTrampoline.Write6Branch(SprintKeyStatusFunction.GetUIntPtr(), uintptr_t(code.getCode()));
 		}
 
 		//Sprinting may still get "stuck" in some cases (e.g opened a menu when still holding the button).
