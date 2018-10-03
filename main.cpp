@@ -31,7 +31,7 @@ extern "C" {
 			_ERROR("Loaded in editor, mod is disabled.");
 			return false;
 		}
-		if (skse->runtimeVersion != RUNTIME_VERSION_1_5_50)
+		if (skse->runtimeVersion != RUNTIME_VERSION_1_5_53)
 		{
 			_ERROR("Error: Incompatible Skyrim version.");
 			return false;
