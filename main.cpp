@@ -114,12 +114,15 @@ extern "C" {
 		//Sprinting may still get "stuck" in some cases (e.g opened a menu when still holding the button).
 		//To fix this we inject this code that is executed before any control is processed.
 
+		//I might remove this part in the future as it is not in the best place, and other controls have this issue anyways.
+
 		{
 			struct ControlFunction_Code : Xbyak::CodeGenerator
 			{
 				ControlFunction_Code(void * buf) : Xbyak::CodeGenerator(4096, buf)
 				{
 					Xbyak::Label returnAddress;
+					Xbyak::Label skipAssign;
 
 					//Original code
 					mov(ptr[rsp + 0x8], rbx);
@@ -132,7 +135,10 @@ extern "C" {
 
 					mov(rbx, SprintStatusAddress.GetUIntPtr());
 					mov(rbx, ptr[rbx]);
+					cmp(rbx, 0x0); //Fix for Mod menu
+					je(skipAssign);
 					mov(ptr[rbx + 0xBDD], rax);
+					L(skipAssign);
 					pop(rbx);
 					pop(rax);
 					jmp(ptr[rip + returnAddress]);
