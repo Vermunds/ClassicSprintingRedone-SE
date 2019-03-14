@@ -5,12 +5,33 @@
 #include <shlobj.h>
 #include <xbyak/xbyak.h>
 
-//SkyrimSE.exe + 0x704B3
-RelocAddr <uintptr_t *> SprintKeyStatusFunction = 0x704B30;
-//SkyrimSE.exe + 0x2F4DEF8
-RelocAddr <uintptr_t *> SprintStatusAddress = 0x2F4DEF8;
-//SkyrimSE.exe + 0x705058
-RelocAddr <uintptr_t *> ControlFunction = 0x704FD0;
+/*
+	[1.5.39] SkyrimSE.exe + 0x704DF0
+	[1.5.51] SkyrimSE.exe + 0x704B30
+	[1.5.53] SkyrimSE.exe + 0x704B30
+	[1.5.62] SkyrimSE.exe + 0x704B30
+	[1.5.73] SkyrimSE.exe + 0x704940
+*/
+RelocAddr <uintptr_t *> SprintKeyStatusFunction = 0x704940;
+
+/*
+	[1.5.39] SkyrimSE.exe + 0x2F4DEF8
+	[1.5.51] SkyrimSE.exe + 0x2F4DEF8
+	[1.5.53] SkyrimSE.exe + 0x2F4DEF8
+	[1.5.62] SkyrimSE.exe + 0x2F4DEF8
+	[1.5.73] SkyrimSE.exe + 0x2F26EF8
+*/
+RelocAddr <uintptr_t *> SprintStatusAddress = 0x2F26EF8;
+
+/*
+	[1.5.39] SkyrimSE.exe + 0x705290
+	[1.5.51] SkyrimSE.exe + 0x704FD0
+	[1.5.53] SkyrimSE.exe + 0x704FD0
+	[1.5.62] SkyrimSE.exe + 0x704FD0
+	[1.5.73] SkyrimSE.exe + 0x704DE0
+*/
+RelocAddr <uintptr_t *> ControlFunction = 0x704DE0;
+
 extern "C" {
 
 	bool SKSEPlugin_Query(const SKSEInterface * skse, PluginInfo * info)
@@ -31,7 +52,7 @@ extern "C" {
 			_ERROR("Loaded in editor, mod is disabled.");
 			return false;
 		}
-		if (skse->runtimeVersion != RUNTIME_VERSION_1_5_62)
+		if (skse->runtimeVersion != RUNTIME_VERSION_1_5_73)
 		{
 			_ERROR("Error: Incompatible Skyrim version.");
 			return false;
@@ -55,13 +76,9 @@ extern "C" {
 
 		_MESSAGE("Injecting code...");
 
-		//SkyrimSE.exe + 0x704B3
 		//This function keeps track of the status of some of the keys. The key is determined by the register R8. If R8 == 0x2 it's the sprinting key.
-		//The sprinting status is determined by the value at Skyrim.SE.exe + 0x2F4DEF8 (byte)
+		//The sprinting status is determined by the value at SprintStatusAddress
 
-		//This is a different function than the original, as it's only called when a key is pressed.
-		//Parent function: SkyrimSE.exe + 0x70E000
-		//Original function: SkyrimSE.exe + 0x709770
 		{
 			struct SprintKeyStatus_Code : Xbyak::CodeGenerator
 			{
@@ -98,7 +115,7 @@ extern "C" {
 					push(rbx);
 					mov(rbx, SprintStatusAddress.GetUIntPtr());
 					mov(rbx, ptr[rbx]);
-					mov(ptr[rbx + 0xBDD], al);
+					mov(byte[rbx + 0xBDD], al);
 					pop(rbx);
 					ret();
 					L(rtrn);
