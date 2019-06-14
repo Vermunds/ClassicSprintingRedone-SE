@@ -12,6 +12,7 @@
 	[1.5.62] SkyrimSE.exe + 0x704B30
 	[1.5.73] SkyrimSE.exe + 0x704940
 */
+//0F 57 C0 0F 2E 42 28 75 14 0F 2F 42 2C 77 0E B8 ?? ?? ?? ?? 84 C0
 RelocAddr <uintptr_t *> SprintKeyStatusFunction = 0x704940;
 
 /*
@@ -21,6 +22,7 @@ RelocAddr <uintptr_t *> SprintKeyStatusFunction = 0x704940;
 	[1.5.62] SkyrimSE.exe + 0x2F4DEF8
 	[1.5.73] SkyrimSE.exe + 0x2F26EF8
 */
+
 RelocAddr <uintptr_t *> SprintStatusAddress = 0x2F26EF8;
 
 /*
@@ -30,6 +32,7 @@ RelocAddr <uintptr_t *> SprintStatusAddress = 0x2F26EF8;
 	[1.5.62] SkyrimSE.exe + 0x704FD0
 	[1.5.73] SkyrimSE.exe + 0x704DE0
 */
+//48 89 5C 24 08 57 48 83 EC 30 C6 41 4A 00 48 8B FA F2 0F 10 05 67 D7 90 02
 RelocAddr <uintptr_t *> ControlFunction = 0x704DE0;
 
 extern "C" {
@@ -52,7 +55,7 @@ extern "C" {
 			_ERROR("Loaded in editor, mod is disabled.");
 			return false;
 		}
-		if (skse->runtimeVersion != RUNTIME_VERSION_1_5_73)
+		if (skse->runtimeVersion != RUNTIME_VERSION_1_5_80)
 		{
 			_ERROR("Error: Incompatible Skyrim version.");
 			return false;
