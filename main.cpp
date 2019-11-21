@@ -1,7 +1,9 @@
-#include "../skse64/PluginAPI.h"
-#include "../skse64_common/skse_version.h"
-#include "../skse64_common/Relocation.h"
-#include "../skse64_common/BranchTrampoline.h"
+#include "skse64_common/skse_version.h"
+#include "skse64_common/Relocation.h"
+#include "skse64_common/BranchTrampoline.h"
+
+#include "skse64/PluginAPI.h"
+
 #include <shlobj.h>
 #include <xbyak/xbyak.h>
 
@@ -11,6 +13,8 @@
 	[1.5.53] SkyrimSE.exe + 0x704B30
 	[1.5.62] SkyrimSE.exe + 0x704B30
 	[1.5.73] SkyrimSE.exe + 0x704940
+	[1.5.80] SkyrimSE.exe + 0x704940
+	[1.5.97] SkyrimSE.exe + 0x704940
 */
 //0F 57 C0 0F 2E 42 28 75 14 0F 2F 42 2C 77 0E B8 ?? ?? ?? ?? 84 C0
 RelocAddr <uintptr_t *> SprintKeyStatusFunction = 0x704940;
@@ -21,6 +25,8 @@ RelocAddr <uintptr_t *> SprintKeyStatusFunction = 0x704940;
 	[1.5.53] SkyrimSE.exe + 0x2F4DEF8
 	[1.5.62] SkyrimSE.exe + 0x2F4DEF8
 	[1.5.73] SkyrimSE.exe + 0x2F26EF8
+	[1.5.80] SkyrimSE.exe + 0x2F26EF8
+	[1.5.97] SkyrimSE.exe + 0x2F26EF8
 */
 
 RelocAddr <uintptr_t *> SprintStatusAddress = 0x2F26EF8;
@@ -31,13 +37,15 @@ RelocAddr <uintptr_t *> SprintStatusAddress = 0x2F26EF8;
 	[1.5.53] SkyrimSE.exe + 0x704FD0
 	[1.5.62] SkyrimSE.exe + 0x704FD0
 	[1.5.73] SkyrimSE.exe + 0x704DE0
+	[1.5.80] SkyrimSE.exe + 0x704DE0
+	[1.5.97] SkyrimSE.exe + 0x704DE0
 */
 //48 89 5C 24 08 57 48 83 EC 30 C6 41 4A 00 48 8B FA F2 0F 10 05 67 D7 90 02
 RelocAddr <uintptr_t *> ControlFunction = 0x704DE0;
 
 extern "C" {
 
-	bool SKSEPlugin_Query(const SKSEInterface * skse, PluginInfo * info)
+	bool SKSEPlugin_Query(const SKSEInterface * a_skse, PluginInfo * a_info)
 	{
 		gLog.OpenRelative(CSIDL_MYDOCUMENTS, "\\My Games\\Skyrim Special Edition\\SKSE\\ClassicSprinting.log");
 		gLog.SetPrintLevel(IDebugLog::kLevel_Error);
@@ -46,16 +54,16 @@ extern "C" {
 		_MESSAGE("Classic Sprinting Redone (SKSE64) for Skyrim Special Edition.");
 		_MESSAGE("Initializing...");
 
-		info->infoVersion = PluginInfo::kInfoVersion;
-		info->name = "Classic Sprinting Redone (SKSE64)";
-		info->version = 1;
+		a_info->infoVersion = PluginInfo::kInfoVersion;
+		a_info->name = "Classic Sprinting Redone (SKSE64)";
+		a_info->version = 1;
 
-		if (skse->isEditor)
+		if (a_skse->isEditor)
 		{
 			_ERROR("Loaded in editor, mod is disabled.");
 			return false;
 		}
-		if (skse->runtimeVersion != RUNTIME_VERSION_1_5_80)
+		if ((a_skse->runtimeVersion != RUNTIME_VERSION_1_5_80) && (a_skse->runtimeVersion != RUNTIME_VERSION_1_5_73) && (a_skse->runtimeVersion != RUNTIME_VERSION_1_5_97))
 		{
 			_ERROR("Error: Incompatible Skyrim version.");
 			return false;
@@ -64,7 +72,7 @@ extern "C" {
 		return true;
 	}
 
-	bool SKSEPlugin_Load(const SKSEInterface * skse) {
+	bool SKSEPlugin_Load(const SKSEInterface * a_skse) {
 
 		if (!g_branchTrampoline.Create(1024 * 64))
 		{
