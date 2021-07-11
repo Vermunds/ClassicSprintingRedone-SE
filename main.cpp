@@ -8,8 +8,6 @@
 
 constexpr auto MESSAGE_BOX_TYPE = 0x00001010L; // MB_OK | MB_ICONERROR | MB_SYSTEMMODAL
 
-using namespace SKSE::util;
-
 namespace CSR
 {
 	using FlagBDD = RE::PlayerCharacter::FlagBDD;
@@ -31,7 +29,7 @@ namespace CSR
 			if (a_event && a_event->opening && a_event->menuName != "LootMenu" && (player->unkBDD & FlagBDD::kSprinting) != FlagBDD::kNone)
 			{
 				// Menu was opened, stop sprinting
-				player->unkBDD &= ~FlagBDD::kSprinting;
+				player->unkBDD &= static_cast<FlagBDD>(~std::underlying_type_t<FlagBDD>(FlagBDD::kSprinting));
 			}
 
 			return RE::BSEventNotifyControl::kContinue;
@@ -65,7 +63,7 @@ namespace CSR
 			if ((player->unkBDD & FlagBDD::kSprinting) != FlagBDD::kNone)
 			{
 				// If sprinting, stop sprinting
-				player->unkBDD &= ~FlagBDD::kSprinting;
+				player->unkBDD &= static_cast<FlagBDD>(~std::underlying_type_t<FlagBDD>(FlagBDD::kSprinting));
 			}
 		}
 		else if (a_event->IsPressed())
@@ -145,6 +143,12 @@ extern "C" {
 
 		REL::Relocation<std::uintptr_t> vTable(RE::Offset::SprintHandler::Vtbl);
 		vTable.write_vfunc(0x4, &CSR::SprintHandler_ProcessButton_Hook);
+
+		// Force sprint state to sync in every frame
+		REL::safe_write(REL::ID{ 39673 }.address() + 0x15A, std::uint16_t(0x9090));
+
+		// Skip HUD meter flashing when out of stamina - we handle it ourselves
+		REL::safe_write(REL::ID{ 41271 }.address() + 0x30C, std::uint8_t(0xEB));
 
 		SKSE::log::info("Hooks Installed.");
 
