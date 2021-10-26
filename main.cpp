@@ -1,12 +1,12 @@
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
-#include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/spdlog.h>
 
 #include "version.h"
 
-constexpr auto MESSAGE_BOX_TYPE = 0x00001010L; // MB_OK | MB_ICONERROR | MB_SYSTEMMODAL
+constexpr auto MESSAGE_BOX_TYPE = 0x00001010L;  // MB_OK | MB_ICONERROR | MB_SYSTEMMODAL
 
 namespace CSR
 {
@@ -82,7 +82,8 @@ namespace CSR
 
 void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 {
-	switch (a_msg->type) {
+	switch (a_msg->type)
+	{
 	case SKSE::MessagingInterface::kDataLoaded:
 		RE::UI* ui = RE::UI::GetSingleton();
 		ui->GetEventSource<RE::MenuOpenCloseEvent>()->AddEventSink(&CSR::g_menuOpenCloseEventHandler);
@@ -111,12 +112,14 @@ extern "C" {
 		a_info->name = Version::PROJECT.data();
 		a_info->version = Version::MAJOR;
 
-		if (a_skse->IsEditor()) {
+		if (a_skse->IsEditor())
+		{
 			SKSE::log::critical("Loaded in editor, marking as incompatible!");
 			return false;
 		}
 
-		if (a_skse->RuntimeVersion() < SKSE::RUNTIME_1_5_39) {
+		if (a_skse->RuntimeVersion() < SKSE::RUNTIME_1_5_39)
+		{
 			SKSE::log::critical("Unsupported runtime version " + a_skse->RuntimeVersion().string());
 			SKSE::WinAPI::MessageBox(nullptr, std::string("Unsupported runtime version " + a_skse->RuntimeVersion().string()).c_str(), "Classic Sprinting Redone - Error", MESSAGE_BOX_TYPE);
 			return false;
@@ -130,10 +133,12 @@ extern "C" {
 		SKSE::Init(a_skse);
 
 		auto messaging = SKSE::GetMessagingInterface();
-		if (messaging->RegisterListener("SKSE", MessageHandler)) {
+		if (messaging->RegisterListener("SKSE", MessageHandler))
+		{
 			SKSE::log::info("Messaging interface registration successful.");
 		}
-		else {
+		else
+		{
 			SKSE::log::critical("Messaging interface registration failed.");
 			SKSE::WinAPI::MessageBox(nullptr, "Messaging interface registration failed.", "Classic Sprinting Redone - Error", MESSAGE_BOX_TYPE);
 			return false;
