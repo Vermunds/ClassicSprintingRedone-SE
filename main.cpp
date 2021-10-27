@@ -1,9 +1,6 @@
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/spdlog.h>
-
 #include "version.h"
 
 constexpr auto MESSAGE_BOX_TYPE = 0x00001010L;  // MB_OK | MB_ICONERROR | MB_SYSTEMMODAL
