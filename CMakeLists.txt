@@ -1,13 +1,24 @@
 cmake_minimum_required(VERSION 3.21)
 
-# Set up project
-
+# Setup project
 project(
 	ClassicSprintingRedone
 	VERSION 2.3.0
 	LANGUAGES CXX
 )
+set(FORMATTED_NAME "Classic Sprinting Redone")
+set(LICENSE "MIT License")
+set(AUTHOR "Vermunds")
 
+# Include guards
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+	message(
+		FATAL_ERROR
+			"In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there."
+	)
+endif()
+
+# Configure files
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.h.in
 	${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
@@ -20,22 +31,15 @@ configure_file(
 	@ONLY
 )
 
-# Include guards
-if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
-	message(
-		FATAL_ERROR
-			"In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there."
-	)
-endif()
 
+# Include sources
 include(cmake/sourcelist.cmake)
 source_group(
 	TREE "${CMAKE_CURRENT_SOURCE_DIR}"
 	FILES ${SOURCES}
 )
 
-# Globals
-
+# Global compile definitions
 if (MSVC)
 	add_compile_definitions(
 		_UNICODE
@@ -48,13 +52,7 @@ if (MSVC)
 	endif ()
 endif ()
 
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG OFF)
-
-set(Boost_USE_STATIC_LIBS ON)
-
 # Create DLL
-
 add_library(
 	${PROJECT_NAME}
 	SHARED
@@ -65,12 +63,14 @@ add_library(
 	.editorconfig
 )
 
+# CXX standard
 target_compile_features(
 	${PROJECT_NAME}
 	PRIVATE
-		cxx_std_20
+		cxx_std_23
 )
 
+# Include directories
 target_include_directories(
 	${PROJECT_NAME}
 	PRIVATE
@@ -78,7 +78,21 @@ target_include_directories(
 		${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-# Dependencies
+target_include_directories(
+	${PROJECT_NAME}
+	PUBLIC
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+		"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
+
+# Precompile header
+target_precompile_headers(
+	${PROJECT_NAME}
+	PRIVATE
+		"include/PCH.h"
+)
+
+# Find and link dependencies
 find_package(spdlog REQUIRED CONFIG)
 
 target_link_libraries(
@@ -88,6 +102,7 @@ target_link_libraries(
 		spdlog::spdlog
 )
 
+# Compile definitions
 if (MSVC)
 	target_compile_options(
 		${PROJECT_NAME}
@@ -157,29 +172,7 @@ target_compile_definitions(
 		"$<$<BOOL:${SKSE_SUPPORT_XBYAK}>:SKSE_SUPPORT_XBYAK=1>"
 )
 
-target_link_libraries(
-	"${PROJECT_NAME}"
-	PUBLIC
-		spdlog::spdlog
-		Version.lib
-)
-
-
-target_precompile_headers(
-	${PROJECT_NAME}
-	PRIVATE
-		PCH.h
-)
-
-target_include_directories(
-	"${PROJECT_NAME}"
-	PUBLIC
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-		"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-)
-
-# ---- Post build ----
-
+# Post build command
 if (CLASSICSPRINTING_DO_INSTALL)
 	if (DEFINED CLASSICSPRINTING_INSTALL_PATH)
 		add_custom_command(

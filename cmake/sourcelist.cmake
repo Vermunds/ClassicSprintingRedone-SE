@@ -1,4 +1,4 @@
 set(SOURCES
-	main.cpp
-	PCH.h
+	include/PCH.h
+	src/main.cpp
 )
