@@ -5,8 +5,6 @@
 
 namespace CSR
 {
-	using FlagBDD = RE::PlayerCharacter::FlagBDD;
-
 	void FlashHudMenuMeter(std::uint32_t a_meter)
 	{
 		using func_t = decltype(&FlashHudMenuMeter);
@@ -21,10 +19,10 @@ namespace CSR
 		{
 			RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 
-			if (a_event && a_event->opening && a_event->menuName != "LootMenu" && (player->unkBDD & FlagBDD::kSprinting) != FlagBDD::kNone)
+			if (a_event && a_event->opening && a_event->menuName != "LootMenu" && player->IsSprinting())
 			{
 				// Menu was opened, stop sprinting
-				player->unkBDD &= static_cast<FlagBDD>(~std::underlying_type_t<FlagBDD>(FlagBDD::kSprinting));
+				player->playerFlags.isSprinting = false;
 			}
 
 			return RE::BSEventNotifyControl::kContinue;
@@ -41,10 +39,10 @@ namespace CSR
 		{
 			if (stamina > 0.0f)
 			{
-				if ((player->unkBDD & FlagBDD::kSprinting) == FlagBDD::kNone)
+				if (!player->IsSprinting())
 				{
 					// If not sprinting, start sprinting
-					player->unkBDD |= FlagBDD::kSprinting;
+					player->playerFlags.isSprinting = true;
 				}
 			}
 			else
@@ -55,20 +53,20 @@ namespace CSR
 		}
 		else if (a_event->IsUp())
 		{
-			if ((player->unkBDD & FlagBDD::kSprinting) != FlagBDD::kNone)
+			if (player->IsSprinting())
 			{
 				// If sprinting, stop sprinting
-				player->unkBDD &= static_cast<FlagBDD>(~std::underlying_type_t<FlagBDD>(FlagBDD::kSprinting));
+				player->playerFlags.isSprinting = false;
 			}
 		}
 		else if (a_event->IsPressed())
 		{
 			if (stamina > 0.0f)
 			{
-				if ((player->unkBDD & FlagBDD::kSprinting) == FlagBDD::kNone)
+				if (!player->IsSprinting())
 				{
 					// If not sprinting, start sprinting
-					player->unkBDD |= FlagBDD::kSprinting;
+					player->playerFlags.isSprinting = true;
 				}
 			}
 		}
@@ -87,17 +85,14 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 	}
 }
 
-extern "C" {
-
+extern "C"
+{
 	DLLEXPORT SKSE::PluginVersionData SKSEPlugin_Version = []() {
 		SKSE::PluginVersionData v{};
 		v.PluginVersion(REL::Version{ Version::MAJOR, Version::MINOR, Version::PATCH, 0 });
 		v.PluginName(Version::NAME);
 		v.AuthorName(Version::AUTHOR);
 		v.CompatibleVersions({ SKSE::RUNTIME_LATEST });
-
-		v.addressLibrary = true;
-		v.sigScanning = false;
 		return v;
 	}();
 
@@ -128,7 +123,7 @@ extern "C" {
 			return false;
 		}
 
-		REL::Relocation<std::uintptr_t> vTable(RE::Offset::SprintHandler::Vtbl);
+		REL::Relocation<std::uintptr_t> vTable(RE::VTABLE_SprintHandler[0]);
 		vTable.write_vfunc(0x4, &CSR::SprintHandler_ProcessButton_Hook);
 
 		// Force sprint state to sync in every frame
