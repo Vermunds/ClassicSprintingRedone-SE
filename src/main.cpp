@@ -19,7 +19,7 @@ namespace CSR
 		{
 			RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 
-			if (a_event && a_event->opening && a_event->menuName != "LootMenu" && player->IsSprinting())
+			if (a_event && a_event->opening && a_event->menuName != "LootMenu" && player->playerFlags.isSprinting)
 			{
 				// Menu was opened, stop sprinting
 				player->playerFlags.isSprinting = false;
@@ -39,7 +39,7 @@ namespace CSR
 		{
 			if (stamina > 0.0f)
 			{
-				if (!player->IsSprinting())
+				if (!player->playerFlags.isSprinting)
 				{
 					// If not sprinting, start sprinting
 					player->playerFlags.isSprinting = true;
@@ -53,7 +53,7 @@ namespace CSR
 		}
 		else if (a_event->IsUp())
 		{
-			if (player->IsSprinting())
+			if (player->playerFlags.isSprinting)
 			{
 				// If sprinting, stop sprinting
 				player->playerFlags.isSprinting = false;
@@ -63,7 +63,7 @@ namespace CSR
 		{
 			if (stamina > 0.0f)
 			{
-				if (!player->IsSprinting())
+				if (!player->playerFlags.isSprinting)
 				{
 					// If not sprinting, start sprinting
 					player->playerFlags.isSprinting = true;
