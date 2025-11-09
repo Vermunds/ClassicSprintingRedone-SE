@@ -19,10 +19,10 @@ namespace CSR
 		{
 			RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 
-			if (a_event && a_event->opening && a_event->menuName != "LootMenu" && player->GetPlayerRuntimeData().playerFlags.isSprinting)
+			if (a_event && a_event->opening && a_event->menuName != "LootMenu" && player->playerFlags.isSprinting)
 			{
 				// Menu was opened, stop sprinting
-				player->GetPlayerRuntimeData().playerFlags.isSprinting = false;
+				player->playerFlags.isSprinting = false;
 			}
 
 			return RE::BSEventNotifyControl::kContinue;
@@ -33,16 +33,16 @@ namespace CSR
 	void SprintHandler_ProcessButton_Hook(RE::SprintHandler* a_this, RE::ButtonEvent* a_event, RE::PlayerControlsData* a_data)
 	{
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-		float stamina = player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina);
+		float stamina = player->GetActorValue(RE::ActorValue::kStamina);
 
 		if (a_event->IsDown())
 		{
 			if (stamina > 0.0f)
 			{
-				if (!player->GetPlayerRuntimeData().playerFlags.isSprinting)
+				if (!player->playerFlags.isSprinting)
 				{
 					// If not sprinting, start sprinting
-					player->GetPlayerRuntimeData().playerFlags.isSprinting = true;
+					player->playerFlags.isSprinting = true;
 				}
 			}
 			else
@@ -53,20 +53,20 @@ namespace CSR
 		}
 		else if (a_event->IsUp())
 		{
-			if (player->GetPlayerRuntimeData().playerFlags.isSprinting)
+			if (player->playerFlags.isSprinting)
 			{
 				// If sprinting, stop sprinting
-				player->GetPlayerRuntimeData().playerFlags.isSprinting = false;
+				player->playerFlags.isSprinting = false;
 			}
 		}
 		else if (a_event->IsPressed())
 		{
 			if (stamina > 0.0f)
 			{
-				if (!player->GetPlayerRuntimeData().playerFlags.isSprinting)
+				if (!player->playerFlags.isSprinting)
 				{
 					// If not sprinting, start sprinting
-					player->GetPlayerRuntimeData().playerFlags.isSprinting = true;
+					player->playerFlags.isSprinting = true;
 				}
 			}
 		}
@@ -93,8 +93,8 @@ extern "C"
 		v.PluginName(Version::NAME);
 		v.AuthorName(Version::AUTHOR);
 		v.UsesAddressLibrary();
-		v.UsesStructsPost629();
-		v.CompatibleVersions({ SKSE::RUNTIME_SSE_1_6_640, SKSE::RUNTIME_SSE_LATEST_AE });
+		v.UsesUpdatedStructs();
+		v.CompatibleVersions({ SKSE::RUNTIME_SSE_1_6_1170, SKSE::RUNTIME_SSE_1_6_1179 });
 		return v;
 	}();
 
