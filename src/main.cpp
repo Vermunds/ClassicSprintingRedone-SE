@@ -109,10 +109,10 @@ extern "C"
 		log->flush_on(spdlog::level::trace);
 
 		spdlog::set_default_logger(std::move(log));
-		spdlog::set_pattern("%g(%#): [%^%l%$] %v", spdlog::pattern_time_type::local);
+		spdlog::set_pattern("%s(%#): [%^%l%$] %v", spdlog::pattern_time_type::local);
 
 		SKSE::log::info("{} v{} -({})", Version::FORMATTED_NAME, Version::STRING, __TIMESTAMP__);
-		SKSE::Init(a_skse);
+		SKSE::Init(a_skse, false);
 
 		auto messaging = SKSE::GetMessagingInterface();
 		if (messaging->RegisterListener("SKSE", MessageHandler))
