@@ -1,7 +1,10 @@
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
-#include "version.h"
+#include "ModConfigUI.h"
+#include "Settings.h"
+
+#include "Version.h"
 
 namespace CSR
 {
@@ -17,6 +20,11 @@ namespace CSR
 	public:
 		virtual RE::BSEventNotifyControl ProcessEvent(const RE::MenuOpenCloseEvent* a_event, RE::BSTEventSource<RE::MenuOpenCloseEvent>* a_dispatcher) override
 		{
+			if (!Settings::GetSingleton()->modActive)
+			{
+				return RE::BSEventNotifyControl::kContinue;
+			}
+
 			RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 
 			if (a_event && a_event->opening && a_event->menuName != "LootMenu" && player->playerFlags.isSprinting)
@@ -30,8 +38,16 @@ namespace CSR
 	};
 	MenuOpenCloseEventHandler g_menuOpenCloseEventHandler;
 
+	using ProcessButton_t = void(RE::SprintHandler*, RE::ButtonEvent*, RE::PlayerControlsData*);
+	static REL::Relocation<ProcessButton_t> _ProcessButton;
+
 	void SprintHandler_ProcessButton_Hook(RE::SprintHandler* a_this, RE::ButtonEvent* a_event, RE::PlayerControlsData* a_data)
 	{
+		if (!Settings::GetSingleton()->modActive)
+		{
+			return _ProcessButton(a_this, a_event, a_data);
+		}
+
 		RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 		float stamina = player->GetActorValue(RE::ActorValue::kStamina);
 
@@ -77,6 +93,9 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 {
 	switch (a_msg->type)
 	{
+	case SKSE::MessagingInterface::kPostLoad:
+		CSR::InstallModConfigUI();
+		break;
 	case SKSE::MessagingInterface::kDataLoaded:
 		RE::UI* ui = RE::UI::GetSingleton();
 		ui->GetEventSource<RE::MenuOpenCloseEvent>()->AddEventSink(&CSR::g_menuOpenCloseEventHandler);
@@ -125,8 +144,10 @@ extern "C"
 			return false;
 		}
 
+		CSR::LoadSettings();
+
 		REL::Relocation<std::uintptr_t> vTable(RE::VTABLE_SprintHandler[0]);
-		vTable.write_vfunc(0x4, &CSR::SprintHandler_ProcessButton_Hook);
+		CSR::_ProcessButton = vTable.write_vfunc(0x4, &CSR::SprintHandler_ProcessButton_Hook);
 
 		// Force sprint state to sync in every frame
 		REL::safe_write(REL::ID{ 40760 }.address() + 0x159, std::uint16_t(0x9090));
