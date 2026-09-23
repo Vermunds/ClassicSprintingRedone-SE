@@ -1,6 +1,3 @@
-#include "RE/Skyrim.h"
-#include "SKSE/SKSE.h"
-
 #include "ModConfigUI.h"
 #include "Settings.h"
 
