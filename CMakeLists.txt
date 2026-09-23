@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.31)
 # Setup project
 project(
 	ClassicSprintingRedone
-	VERSION 2.3.1
+	VERSION 2.4.0
 	LANGUAGES CXX
 )
 set(FORMATTED_NAME "Classic Sprinting Redone")
