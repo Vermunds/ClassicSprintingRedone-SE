@@ -96,7 +96,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 	case SKSE::MessagingInterface::kDataLoaded:
 		RE::UI* ui = RE::UI::GetSingleton();
 		ui->GetEventSource<RE::MenuOpenCloseEvent>()->AddEventSink(&CSR::g_menuOpenCloseEventHandler);
-		SKSE::log::info("Menu open/close event handler sinked.");
+		logger::info("Menu open/close event handler sinked.");
 		break;
 	}
 }
@@ -110,49 +110,43 @@ extern "C"
 		v.AuthorName(Version::AUTHOR);
 		v.UsesAddressLibrary();
 		v.UsesUpdatedStructs();
-		v.CompatibleVersions({ SKSE::RUNTIME_SSE_1_6_1170, SKSE::RUNTIME_SSE_1_6_1179 });
+		v.CompatibleVersions({ SKSE::RUNTIME_SSE_1_7_104 });
 		return v;
 	}();
 
 	DLLEXPORT bool SKSEPlugin_Load(SKSE::LoadInterface* a_skse)
 	{
-		assert(SKSE::log::log_directory().has_value());
-		auto path = SKSE::log::log_directory().value() / std::filesystem::path(Version::NAME.data() + ".log"s);
-		auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path.string(), true);
-		auto log = std::make_shared<spdlog::logger>("global log", std::move(sink));
+		SKSE::InitInfo initInfo{};
+		initInfo.logLevel = REX::ELogLevel::Trace;
+		initInfo.logPattern = "%s(%#): [%^%l%$] %v";
+		SKSE::Init(a_skse, initInfo);
 
-		log->set_level(spdlog::level::trace);
-		log->flush_on(spdlog::level::trace);
 
-		spdlog::set_default_logger(std::move(log));
-		spdlog::set_pattern("%s(%#): [%^%l%$] %v", spdlog::pattern_time_type::local);
-
-		SKSE::log::info("{} v{} -({})", Version::FORMATTED_NAME, Version::STRING, __TIMESTAMP__);
-		SKSE::Init(a_skse, false);
+		logger::info("{} v{} -({})", Version::FORMATTED_NAME, Version::STRING, __TIMESTAMP__);
 
 		auto messaging = SKSE::GetMessagingInterface();
 		if (messaging->RegisterListener("SKSE", MessageHandler))
 		{
-			SKSE::log::info("Messaging interface registration successful.");
+			logger::info("Messaging interface registration successful.");
 		}
 		else
 		{
-			SKSE::log::critical("Messaging interface registration failed.");
+			logger::critical("Messaging interface registration failed.");
 			return false;
 		}
 
 		CSR::LoadSettings();
 
 		REL::Relocation<std::uintptr_t> vTable(RE::VTABLE_SprintHandler[0]);
-		CSR::_ProcessButton = vTable.write_vfunc(0x4, &CSR::SprintHandler_ProcessButton_Hook);
+		CSR::_ProcessButton = vTable.write_vfunc(0x6, &CSR::SprintHandler_ProcessButton_Hook);
 
 		// Force sprint state to sync in every frame
-		REL::safe_write(REL::ID{ 40760 }.address() + 0x159, std::uint16_t(0x9090));
+		REL::WriteSafeData(REL::ID{ 40760 }.address() + 0x159, std::uint16_t(0x9090));
 
 		// Skip HUD meter flashing when out of stamina - we handle it ourselves
-		REL::safe_write(REL::ID{ 42350 }.address() + 0x350, std::uint8_t(0xEB));
+		REL::WriteSafeData(REL::ID{ 42350 }.address() + 0x350, std::uint8_t(0xEB));
 
-		SKSE::log::info("Hooks Installed.");
+		logger::info("Hooks Installed.");
 
 		return true;
 	}

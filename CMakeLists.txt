@@ -62,12 +62,9 @@ target_precompile_headers(
 )
 
 # Find and link dependencies
-find_package(spdlog REQUIRED CONFIG)
-
 target_link_libraries(
 	${PROJECT_NAME}
 	PRIVATE
 		CommonLibSSE::CommonLibSSE
-		spdlog::spdlog
 		ModConfigUI
 )
