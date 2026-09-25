@@ -1,7 +1,7 @@
 # Classic Sprinting Redone
 [![Nexus Mods](https://img.shields.io/badge/NexusMods-Download-orange)](https://www.nexusmods.com/skyrimspecialedition/mods/20166)
 [![GitHub release](https://img.shields.io/github/v/release/Vermunds/ClassicSprintingRedone-SE)](https://github.com/Vermunds/ClassicSprintingRedone-SE/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](./LICENSE)
 
 A mod for The Elder Scrolls V: Skyrim - Special Edition.
 
@@ -17,4 +17,4 @@ Available on [Nexusmods](https://www.nexusmods.com/skyrimspecialedition/mods/201
 To build this mod refer to my wrapper project [here](https://github.com/Vermunds/SkyrimSE-Mods).
 
 ## License
-This software is available under the MIT License. See LICENSE for details.
+This software is available under the GNU General Public License v3.0 or later, with a modding exception. See [LICENSE](./LICENSE) and [EXCEPTIONS.md](./EXCEPTIONS.md) for details.
